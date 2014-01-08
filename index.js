@@ -1,14 +1,56 @@
 var arDrone = require('ar-drone');
 var client = arDrone.createClient({
-  frameRate: 2
+  frameRate: 5
 });
+var PNGReader = require('png.js');
 var fs = require('fs');
 
-var frame = 0;
+var shouldTrack = false;
 
 client.getPngStream().on('data', function(data) {
-  frame++;
-  fs.writeFile('imgs/frame' + frame + ".png", data, function() {
+  if (!shouldTrack)
+    return;
+
+  var reader = new PNGReader(data);
+  reader.parse(function(err, png) {
+    if (err) {
+      console.log("PNG Error: " + err);
+      return;
+    }
+    var w = png.getWidth();
+    var h = png.getHeight();
+    var x;
+    var y;
+    var green = [0,0];
+    var pixel, r, g, b;
+
+    for (x = 0; x < w; x += 40) {
+      for (y = 0; y < h; y += 30) {
+        pixel = png.getPixel(x, y);
+        r = pixel[0];
+        g = pixel[1];
+        b = pixel[2];
+
+        if (g > 110 && g > r && g > b) {
+          if (x < w / 3) {
+            green[0]++;
+          } else if (x > 2*(w / 3)) {
+            green[1]++;
+          }
+        }
+      }
+    }
+
+    if (green[0] > Math.max(0, green[1] - 10)) {
+      client.clockwise(0.5);
+    } else if (green[1] > Math.max(0, green[0] - 10)) {
+      client.counterClockwise(0.5);
+    } else {
+      client.stop();
+    }
+
+    fs.writeFile('imgs/frame' + Date.now() + JSON.stringify(green) + '.png', data, function() {
+    });
   });
 });
 
@@ -16,12 +58,13 @@ client.takeoff();
 
 client.after(5000, function() {
   client.on('navdata', function(d) {
-    console.log(d);
+    //console.log(d);
   });
-  client.up(0.15);
+  client.up(0.2);
   client.after(2000, function() {
     client.stop();
-    client.after(1000, function() {
+    shouldTrack = true;
+    client.after(8000, function() {
       client.land();
     });
   });
