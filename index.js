@@ -1,3 +1,5 @@
+var TURN_THRESHHOLD = 10;
+
 var arDrone = require('ar-drone');
 var client = arDrone.createClient({
   frameRate: 5
@@ -41,9 +43,9 @@ client.getPngStream().on('data', function(data) {
       }
     }
 
-    if (green[0] > Math.max(0, green[1] - 10)) {
+    if (green[0] - green[1] > TURN_THRESHHOLD) {
       client.clockwise(0.5);
-    } else if (green[1] > Math.max(0, green[0] - 10)) {
+    } else if (green[1] - green[0] > TURN_THRESHHOLD) {
       client.counterClockwise(0.5);
     } else {
       client.stop();
