@@ -25,7 +25,7 @@ client.getPngStream().on('data', function(data) {
     var h = png.getHeight();
     var x;
     var y;
-    var green = [0,0];
+    var green = { left: 0, right: 0 };
     var pixel, r, g, b;
 
     for (x = 0; x < w; x += 40) {
@@ -37,15 +37,15 @@ client.getPngStream().on('data', function(data) {
 
         if (g > 110 && g > r+r/10 && g > b+b/10) {
           if (x < w / 3) {
-            green[0]++;
+            green.left++;
           } else if (x > 2*(w / 3)) {
-            green[1]++;
+            green.right++;
           }
         }
       }
     }
 
-    if (green[0] - green[1] >= TURN_THRESHHOLD) {
+    if (green.left - green.right >= TURN_THRESHHOLD) {
       if (direction !== "left") {
         direction = "left";
         client.stop();
@@ -55,7 +55,7 @@ client.getPngStream().on('data', function(data) {
         client.counterClockwise(0.2);
         client.animateLeds('frontLeftGreenOthersRed', 40, 1);
       });
-    } else if (green[1] - green[0] >= TURN_THRESHHOLD) {
+    } else if (green.right - green.left >= TURN_THRESHHOLD) {
       if (direction !== "right") {
         direction = "right";
         client.stop();
