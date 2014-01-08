@@ -1,13 +1,15 @@
-var TURN_THRESHHOLD = 10;
+var TURN_THRESHHOLD = 6;
+var FRAME_RATE = 3;
 
 var arDrone = require('ar-drone');
 var client = arDrone.createClient({
-  frameRate: 5
+  frameRate: FRAME_RATE
 });
 var PNGReader = require('png.js');
 var fs = require('fs');
 
 var shouldTrack = false;
+var direction = "";
 
 client.getPngStream().on('data', function(data) {
   if (!shouldTrack)
@@ -33,7 +35,7 @@ client.getPngStream().on('data', function(data) {
         g = pixel[1];
         b = pixel[2];
 
-        if (g > 110 && g > r && g > b) {
+        if (g > 110 && g > r+r/10 && g > b+b/10) {
           if (x < w / 3) {
             green[0]++;
           } else if (x > 2*(w / 3)) {
@@ -43,12 +45,34 @@ client.getPngStream().on('data', function(data) {
       }
     }
 
-    if (green[0] - green[1] > TURN_THRESHHOLD) {
-      client.clockwise(0.5);
-    } else if (green[1] - green[0] > TURN_THRESHHOLD) {
-      client.counterClockwise(0.5);
+    if (green[0] - green[1] >= TURN_THRESHHOLD) {
+      if (direction !== "left") {
+        direction = "left";
+        client.stop();
+      }
+      console.log("counter clockwise");
+      client.after(100, function() {
+        client.counterClockwise(0.2);
+        client.animateLeds('frontLeftGreenOthersRed', 40, 1);
+      });
+    } else if (green[1] - green[0] >= TURN_THRESHHOLD) {
+      if (direction !== "right") {
+        direction = "right";
+        client.stop();
+      }
+      console.log("clockwise");
+      client.after(100, function() {
+        client.clockwise(0.2);
+        client.animateLeds('frontRightGreenOthersRed', 40, 1);
+      });
     } else {
-      client.stop();
+      direction = "";
+      if (direction !== "") {
+        direction = 0;
+        client.stop();
+      }
+      console.log("stay the course");
+      client.animateLeds('blinkGreen', 15, 1);
     }
 
     fs.writeFile('imgs/frame' + Date.now() + JSON.stringify(green) + '.png', data, function() {
@@ -62,7 +86,7 @@ client.after(5000, function() {
   client.on('navdata', function(d) {
     //console.log(d);
   });
-  client.up(0.2);
+  client.up(0.15);
   client.after(2000, function() {
     client.stop();
     shouldTrack = true;
