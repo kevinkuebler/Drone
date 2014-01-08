@@ -51,8 +51,8 @@ client.getPngStream().on('data', function(data) {
         client.stop();
 
         console.log("counter clockwise");
-        client.counterClockwise(0.1);
-        client.animateLeds('frontLeftGreenOthersRed', 40, 1);
+        client.counterClockwise(0.14);
+        client.animateLeds('leftMissile', 6, 1);
       }
     } else if (green.right - green.left >= TURN_THRESHHOLD) {
       if (direction !== "right") {
@@ -60,8 +60,8 @@ client.getPngStream().on('data', function(data) {
         client.stop();
 
         console.log("clockwise");
-        client.clockwise(0.1);
-        client.animateLeds('frontRightGreenOthersRed', 40, 1);
+        client.clockwise(0.14);
+        client.animateLeds('rightMissile', 6, 1);
       }
     } else {
       if (direction !== "") {
@@ -69,7 +69,7 @@ client.getPngStream().on('data', function(data) {
         client.stop();
 
         console.log("stay the course");
-        client.animateLeds('blinkGreen', 15, 1);
+        client.animateLeds('blinkGreen', 2, 1);
       }
     }
 
@@ -89,7 +89,7 @@ client.after(5000, function() {
   client.after(3000, function() {
     console.log("stopped ascent")
     client.stop();
-    client.after(1000, function() {
+    client.after(0, function() {
       console.log("started tracking");
       shouldTrack = true;
       client.after(12000, function() {
