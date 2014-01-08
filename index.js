@@ -31,7 +31,7 @@ var directions = {
   "forwards": function() {
     console.log("forwards");
     client.stop();
-    client.up(0.075);
+    client.up(0.06);
     client.front(0.15);
     client.animateLeds("blinkRed", 6, 1);
     client.after(100, function() {
@@ -50,7 +50,7 @@ var directions = {
 var direction = directions.none;
 var nextDirection = directions.left;
 var lastDirection = directions.none;
-var seek = 0;
+var seek = 0, seekLeft = 0;
 
 client.getPngStream().on('data', function(data) {
   if (!shouldTrack)
@@ -90,6 +90,10 @@ client.getPngStream().on('data', function(data) {
       }
     }
 
+    if (seekLeft-- > 0) {
+      return;
+    }
+
     if (green.center > TURN_THRESHHOLD &&
         (green.center >= (green.left+green.right) / 2)) {
       if (direction !== directions.forwards && nextDirection === directions.forwards) {
@@ -111,8 +115,9 @@ client.getPngStream().on('data', function(data) {
         direction = directions.none;
       }
       nextDirection = directions.none;
-      if (seek++ % 3 === 0) {
+      if (seek++ % 5 === 0) {
         direction = lastDirection;
+        seekLeft = 10;
       }
     }
 
