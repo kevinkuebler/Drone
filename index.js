@@ -36,9 +36,9 @@ client.getPngStream().on('data', function(data) {
         b = pixel[2];
 
         if (g > 110 && g > r+r/10 && g > b+b/10) {
-          if (x < w / 3) {
+          if (x < w / 2) {
             green.left++;
-          } else if (x > 2*(w / 3)) {
+          } else if (x >= w / 2) {
             green.right++;
           }
         }
@@ -79,23 +79,21 @@ client.getPngStream().on('data', function(data) {
 });
 
 console.log("takeoff");
-client.takeoff();
-client.after(5000, function() {
-  client.on('navdata', function(d) {
-    //console.log(d);
-  });
+client.takeoff(function() {
   console.log("ascend");
-  client.up(0.10);
-  client.after(3000, function() {
-    console.log("stopped ascent")
-    client.stop();
-    client.after(0, function() {
-      console.log("started tracking");
-      shouldTrack = true;
-      client.after(12000, function() {
-        console.log("landing");
-        shouldTrack = false;
-        client.land();
+  client.after(1000, function() {
+    client.up(0.10);
+    client.after(3000, function() {
+      console.log("stopped ascent")
+      client.stop();
+      client.after(0, function() {
+        console.log("started tracking");
+        shouldTrack = true;
+        client.after(12000, function() {
+          console.log("landing");
+          shouldTrack = false;
+          client.land();
+        });
       });
     });
   });
