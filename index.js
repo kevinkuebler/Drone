@@ -31,7 +31,7 @@ var directions = {
   "forwards": function() {
     console.log("forwards");
     client.stop();
-    client.up(0.06);
+    client.up(0.065);
     client.front(0.15);
     client.animateLeds("blinkRed", 6, 1);
     client.after(100, function() {
@@ -48,8 +48,8 @@ var directions = {
 };
 
 var direction = directions.none;
-var nextDirection = directions.left;
-var lastDirection = directions.none;
+var nextDirection = directions.none;
+var lastDirection = directions.left;
 var seek = 0, seekLeft = 0;
 
 client.getPngStream().on('data', function(data) {
@@ -70,6 +70,13 @@ client.getPngStream().on('data', function(data) {
     var pixel, r, g, b;
     var oldDirection = direction;
 
+    fs.writeFile('imgs/frame' + Date.now() + JSON.stringify([green.left, green.center, green.right]) + '.png', data, function() {
+    });
+
+    if (seekLeft-- > 0) {
+      return;
+    }
+
     for (x = 0; x < w; x += 10) {
       for (y = 0; y < h; y += 30) {
         pixel = png.getPixel(x, y);
@@ -88,10 +95,6 @@ client.getPngStream().on('data', function(data) {
           }
         }
       }
-    }
-
-    if (seekLeft-- > 0) {
-      return;
     }
 
     if (green.center > TURN_THRESHHOLD &&
@@ -117,16 +120,13 @@ client.getPngStream().on('data', function(data) {
       nextDirection = directions.none;
       if (seek++ % 5 === 0) {
         direction = lastDirection;
-        seekLeft = 10;
+        seekLeft = 5;
       }
     }
 
     if (direction !== oldDirection) {
       direction();
     }
-
-    fs.writeFile('imgs/frame' + Date.now() + JSON.stringify([green.left, green.center, green.right]) + '.png', data, function() {
-    });
   });
 });
 
@@ -141,7 +141,7 @@ client.takeoff(function() {
       client.after(0, function() {
         console.log("started tracking");
         shouldTrack = true;
-        client.after(30000, function() {
+        client.after(60000, function() {
           console.log("landing");
           shouldTrack = false;
           client.land(function() {
