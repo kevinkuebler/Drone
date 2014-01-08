@@ -63,6 +63,15 @@ client.getPngStream().on('data', function(data) {
         client.clockwise(0.14);
         client.animateLeds('rightMissile', 6, 1);
       }
+    } else if ((green.left + green.right) > TURN_THRESHHOLD * 1.1 &&
+        Math.abs(green.left - green.right) <= TURN_THRESHHOLD) {
+      if (direction !== "forwards") {
+        console.log("forwards");
+        client.stop();
+        client.front(0.2);
+        direction = "forwards";
+        client.animateLeds("snakeGreenRed", 6, 1);
+      }
     } else {
       if (direction !== "") {
         direction = "";
@@ -81,7 +90,7 @@ client.getPngStream().on('data', function(data) {
 console.log("takeoff");
 client.takeoff(function() {
   console.log("ascend");
-  client.after(1000, function() {
+  client.after(2000, function() {
     client.up(0.10);
     client.after(3000, function() {
       console.log("stopped ascent")
@@ -89,7 +98,7 @@ client.takeoff(function() {
       client.after(0, function() {
         console.log("started tracking");
         shouldTrack = true;
-        client.after(12000, function() {
+        client.after(20000, function() {
           console.log("landing");
           shouldTrack = false;
           client.land();
